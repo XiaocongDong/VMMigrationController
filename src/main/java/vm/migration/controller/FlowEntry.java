@@ -7,18 +7,18 @@ public class FlowEntry {
     private int id;
     private int tableId;
     private int priority;
-    private Switch sw;
-    private Port port;
+    private String nodeId;
+    private int portNumber;
     private String srcIp;
     private String destIp;
 
-    public FlowEntry(int id, int tableId, int priority, Switch sw,
-                     Port port, String srcIp, String destIp){
+    public FlowEntry(int id, int tableId, int priority, String nodeId,
+                     int portNumber, String srcIp, String destIp){
         this.id = id;
         this.tableId = tableId;
         this.priority = priority;
-        this.sw = sw;
-        this.port = port;
+        this.nodeId = nodeId;
+        this.portNumber = portNumber;
         this.srcIp = srcIp;
         this.destIp = destIp;
     }
@@ -35,12 +35,12 @@ public class FlowEntry {
         return priority;
     }
 
-    public Switch getSw() {
-        return sw;
+    public String getNodeId() {
+        return nodeId;
     }
 
-    public Port getPort() {
-        return port;
+    public int getPort() {
+        return portNumber;
     }
 
     public String getSrcIp() {

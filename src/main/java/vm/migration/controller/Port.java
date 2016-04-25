@@ -29,4 +29,8 @@ public class Port {
                 "rate" + rate + "\t" +
                 "Switch " + connectedSwitch;
     }
+
+    public int getPortNumber(){
+        return Integer.parseInt(portNumber);
+    }
 }

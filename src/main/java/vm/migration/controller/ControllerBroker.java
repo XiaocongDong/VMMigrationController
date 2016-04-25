@@ -3,6 +3,8 @@ package vm.migration.controller;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,62 +26,89 @@ public class ControllerBroker {
         this.ip = ip;
     }
 
-    public boolean deleteFlowEntries(List<FlowEntry> flowEntries){
+    public boolean writeFlowEntries(List<FlowEntry> flowEntries, TYPE type){
         for (FlowEntry flowEntry : flowEntries){
-            if (!deleteFloeEntry(flowEntry))
+            if (!writeFlowEntry(flowEntry, type))
                 return false;
         }
         return true;
     }
 
-    private boolean deleteFloeEntry(FlowEntry flowEntry){
-        return true;
-    }
-
-    public boolean addFlowEntries(List<FlowEntry> flowEntries){
-        for (FlowEntry flowEntry : flowEntries){
-            if (!addFlowEntry(flowEntry)){
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean addFlowEntry(FlowEntry flowEntry){
+    public boolean writeFlowEntry(FlowEntry flowEntry, TYPE type){
+        String nodeId = flowEntry.getNodeId();
+        String srcIp = flowEntry.getSrcIp();
+        String destIp = flowEntry.getDestIp();
+        int port = flowEntry.getPort();
+        int tableId = flowEntry.getTableId();
+        int priority = flowEntry.getPriority();
         String body = String.format(
                 "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n" +
-                "<flow xmlns='urn:opendaylight:flow:inventory'>\n" +
-                        "<strict>false</strict>\n" +
-                        "<flow-name>testFlow</flow-name>\n" +
-                        "<id>258</id>\n" +
-                        "<cookie_mask>255</cookie_mask>\n" +
-                        "<cookie>103</cookie>\n" +
-                        "<table_id>2</table_id>\n" +
-                        "<priority>2</priority>\n" +
-                        "<hard-timeout>1200</hard-timeout>\n" +
-                        "<idle-timeout>3400</idle-timeout>\n" +
-                        "<installHw>false</installHw>\n" +
-                        "<instructions>\n" +
-                            "<instruction>\n" +
-                                "<order>0</order>\n" +
-                                "<apply-actions>\n" +
-                                    "<action>\n" +
-                                        "<order>0</order>\n" +
-                                        "<output-action>\n" +
-                                            "<output-node-connector>1</output-node-connector>\n" +
-                                            "<max-length>60</max-length>\n" +
-                                        "</output-action>\n" +
-                                    "</action>\n" +
-                                "</apply-actions>\n" +
-                            "</instruction>\n" +
-                        "</instructions>\n" +
-                        "<match>\n" +
-                            "<ipv4-source>10.0.0.1/8</ipv4-source>\n" +
-                            "<ipv4-destination>10.0.0.2/8</ipv4-destination>\n" +
-                        "</match>\n" +
-                "</flow>");
-        return true;
+                        "<input xmlns='urn:opendaylight:flow:service'>\n" +
+                        "   <barrier>false</barrier>\n" +
+                        "   <node xmlns:inv='urn:opendaylight:inventory'>/inv:nodes/inv:node[inv:id='%s']</node>\n" +
+                        "   <cookie>500</cookie>\n" +
+                        "   <hard-timeout>0</hard-timeout>\n" +
+                        "   <idle-timeout>0</idle-timeout>\n" +
+                        "   <installHw>false</installHw>\n" +
+                        "   <match>\n" +
+                        "    <ethernet-match>\n" +
+                        "     <ethernet-type>\n" +
+                        "       <type>2048</type>\n" +
+                        "     </ethernet-type>\n" +
+                        "    </ethernet-match>\n" +
+                        "    <ipv4-source>%s</ipv4-source>\n" +
+                        "    <ipv4-destination>%s</ipv4-destination>\n" +
+                        "   </match>\n" +
+                        "   <instructions>\n" +
+                        "    <instruction>\n" +
+                        "     <order>0</order>\n" +
+                        "     <apply-actions>\n" +
+                        "       <action>\n" +
+                        "        <order>0</order>\n" +
+                        "        <output-action>\n" +
+                        "          <output-node-connector>%d</output-node-connector>\n" +
+                        "          <max-length>60</max-length>\n" +
+                        "        </output-action>\n" +
+                        "       </action>\n" +
+                        "     </apply-actions>\n" +
+                        "    </instruction>\n" +
+                        "   </instructions>\n" +
+                        "   <priority>%d</priority>\n" +
+                        "   <strict>false</strict>\n" +
+                        "   <table_id>%d</table_id>\n" +
+                        "</input>", nodeId, srcIp, destIp, port, priority, tableId);
+        String url;
+        if (type == TYPE.ADD){
+            url = String.format("http://%s:8181/restconf/operations/sal-flow:add-flow", ip);
+        }else {
+            url = String.format("http://%s:8181/restconf/operations/sal-flow:remove-flow", ip);
+        }
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpPost postRequest = new HttpPost(url);
+
+        postRequest.setHeader("Authorization", "Basic YWRtaW46YWRtaW4=");
+        postRequest.setHeader("Accept", "application/json");
+
+        try{
+            out.println(body);
+            StringEntity input = new StringEntity(body);
+            input.setContentType("application/xml");
+            postRequest.setEntity(input);
+            HttpResponse response = httpClient.execute(postRequest);
+            out.println(response);
+            if (response.getStatusLine().getStatusCode() == 200){
+                out.println("succeed");
+                return true;
+            }else{
+
+                return false;
+            }
+        }catch (IOException e){
+            out.println("exception");
+            return false;
+        }
     }
+
 
     public Topology getNetWorkTopo() throws Exception{
         Topology topo = new Topology();
@@ -170,4 +199,5 @@ public class ControllerBroker {
     public void updateTopoData(Topology topo){
 
     }
+
 }
