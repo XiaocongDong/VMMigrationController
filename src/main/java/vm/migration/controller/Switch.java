@@ -1,6 +1,8 @@
 package vm.migration.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -9,31 +11,40 @@ import java.util.Map;
 public class Switch {
     private String nodeId;
     private Map<String, Port> portMap;
-    private Map<String, Host> hostMap;
+    private List<String> hosts;
 
     public Switch(String nodeId){
         this.nodeId = nodeId;
         this.portMap = new HashMap<String, Port>();
-        this.hostMap = new HashMap<String, Host>();
+        this.hosts = new ArrayList<String>();
     }
 
     public void addPort(String portNumber, Port port){
         this.portMap.put(portNumber, port);
     }
 
-    public void addHost(String src, Host host){
-        this.hostMap.put(src, host);
+    public void addHost(String hostIp){
+        this.hosts.add(hostIp);
+    }
+
+    public Port getPortByPortNumber(String portNumber){
+        return this.portMap.get(portNumber);
     }
 
     public Map<String, Port> getPortMap(){
         return portMap;
     }
 
-    public Map<String, Host> getHostMap(){
-        return hostMap;
-    }
-
     public String getNodeId() {
         return nodeId;
+    }
+
+    public String toString(){
+        StringBuilder switchInfo = new StringBuilder();
+        switchInfo.append("NodeId " + nodeId + "\n");
+        for(Port port : portMap.values()){
+            switchInfo.append("\t" + port + "\n");
+        }
+        return switchInfo.toString();
     }
 }

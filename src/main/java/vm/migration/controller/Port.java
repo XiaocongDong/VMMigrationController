@@ -6,14 +6,14 @@ package vm.migration.controller;
 public class Port {
     private String portNumber;
     private float rate;
-    private Switch connectedSwitch;
+    private String connectedSwitch;
 
     public Port(String portNumber){
         this.portNumber = portNumber;
     }
 
-    public void setConnectedSwitch(String portNumber, Switch connectedSwitch){
-        this.connectedSwitch = connectedSwitch;
+    public void setConnectedSwitch(String connectedSwitchId){
+        this.connectedSwitch = connectedSwitchId;
     }
 
     public void setRate(String portNumber, float rate){
@@ -22,5 +22,11 @@ public class Port {
 
     public float getRate() {
         return rate;
+    }
+
+    public String toString(){
+        return "portNumber " + portNumber + "\t" +
+                "rate" + rate + "\t" +
+                "Switch " + connectedSwitch;
     }
 }

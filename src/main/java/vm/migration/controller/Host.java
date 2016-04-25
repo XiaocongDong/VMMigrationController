@@ -25,4 +25,10 @@ public class Host {
     public String getMac() {
         return mac;
     }
+
+    public String toString(){
+        return "nodeId " + nodeId + "\t" +
+                "mac " + mac + "\t" +
+                "ip " + ip;
+    }
 }
