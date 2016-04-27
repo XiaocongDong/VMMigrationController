@@ -13,8 +13,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static java.lang.System.console;
 import static java.lang.System.out;
 /**
  * Created by xiaocdon on 2016/4/23.
@@ -95,7 +98,6 @@ public class ControllerBroker {
             input.setContentType("application/xml");
             postRequest.setEntity(input);
             HttpResponse response = httpClient.execute(postRequest);
-            out.println(response);
             if (response.getStatusLine().getStatusCode() == 200){
                 out.println("succeed");
                 return true;
@@ -187,6 +189,7 @@ public class ControllerBroker {
                     }
                 }
                 int i = 1;
+
             }else {
                 throw new Exception("Can't get the topo information of the network");
             }
@@ -196,8 +199,108 @@ public class ControllerBroker {
         return topo;
     }
 
-    public void updateTopoData(Topology topo){
+    public void updateTopoInfo(Topology topo){
+         for (Switch sw : topo.getSwitchs()){
+             updateSwitchInfo(sw);
+         }
+        out.println(topo);
+    }
 
+    public void updateSwitchInfo(Switch sw){
+        String nodeId = sw.getNodeId();
+        String url = String.format(
+                "http://%s:8181/restconf/operational/opendaylight-inventory:nodes/node/%s/",
+                ip, nodeId);
+        Map<String, Long> rateMap = new HashMap<String, Long>();
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpGet getRequest = new HttpGet(url);
+        getRequest.setHeader("Authorization", "Basic YWRtaW46YWRtaW4=");
+        getRequest.setHeader("Accept", "application/json");
+
+        try {
+            HttpResponse response = httpClient.execute(getRequest);
+            if (response.getStatusLine().getStatusCode() == 200) {
+                InputStream inputStream = response.getEntity().getContent();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder strBuilder = new StringBuilder();
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    strBuilder.append(line);
+                }
+
+                String responseStr = strBuilder.toString();
+                JSONObject responseJson = new JSONObject(responseStr);
+                JSONArray nodeInfoArr = responseJson.getJSONArray("node");
+                JSONObject nodeInfo = nodeInfoArr.optJSONObject(0);
+                JSONArray nodeArr = nodeInfo.getJSONArray("node-connector");
+
+                //iterate to get all the port infomation of the node
+                for (int i = 0; i < nodeArr.length(); i++){
+                    JSONObject node = nodeArr.getJSONObject(i);
+                    String[] nodeIdArr = node.getString("id").split(":");
+                    String portNumber = nodeIdArr[nodeIdArr.length - 1];
+                    if (portNumber.equals("LOCAL"))
+                        continue;
+                    JSONObject statistics = node.getJSONObject(
+                            "opendaylight-port-statistics:flow-capable-node-connector-statistics");
+                    JSONObject bytes = statistics.getJSONObject("bytes");
+                    long transmitted = bytes.getLong("transmitted");
+                    Long received = bytes.getLong("received");
+//                    out.println("portNumber "+ portNumber + " tx :" + transmitted + "  rx :" + received);
+                    long transport = transmitted + received;
+                    rateMap.put(portNumber, transport);
+                }
+            }
+        }catch (IOException e){
+            out.println("can't update the switch port rate");
+        }
+        try{
+          Thread.sleep(3000);
+        }catch (InterruptedException e){
+
+        }
+
+        try{
+            HttpResponse response = httpClient.execute(getRequest);
+            if (response.getStatusLine().getStatusCode() == 200) {
+                InputStream inputStream = response.getEntity().getContent();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder strBuilder = new StringBuilder();
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    strBuilder.append(line);
+                }
+                String responseStr = strBuilder.toString();
+                JSONObject responseJson = new JSONObject(responseStr);
+                JSONArray nodeInfoArr = responseJson.getJSONArray("node");
+                JSONObject nodeInfo = nodeInfoArr.optJSONObject(0);
+                JSONArray nodeArr = nodeInfo.getJSONArray("node-connector");
+
+                for (int i = 0; i < nodeArr.length(); i++) {
+                    JSONObject node = nodeArr.getJSONObject(i);
+                    String[] nodeIdArr = node.getString("id").split(":");
+                    String portNumber = nodeIdArr[nodeIdArr.length - 1];
+                    if (portNumber.equals("LOCAL"))
+                        continue;
+                    JSONObject statistics = node.getJSONObject(
+                            "opendaylight-port-statistics:flow-capable-node-connector-statistics");
+                    JSONObject bytes = statistics.getJSONObject("bytes");
+                    long transmitted = bytes.getLong("transmitted");
+                    Long received = bytes.getLong("received");
+                    long transport = transmitted + received;
+                    long interval = 3;
+                    long rate = (transport - rateMap.get(portNumber)) / (interval);
+                    rateMap.replace(portNumber, rate);
+                }
+
+                for (Map.Entry<String, Long> mapEntry : rateMap.entrySet()) {
+                    sw.getPortByPortNumber(mapEntry.getKey()).setRate(mapEntry.getValue());
+                }
+//                out.println(sw);
+            }
+        }catch (IOException e){
+
+        }
     }
 
 }
