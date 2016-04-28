@@ -24,6 +24,12 @@ public class Topology {
         this.switchMap.put(sw.getNodeId(), sw);
     }
 
+    public void addSwitchs(Switch... switches){
+        for (Switch sw : switches){
+            this.addSwitch(sw);
+        }
+    }
+
     public void addHost(String nodeId, Host host){
         this.hostMap.put(nodeId, host);
     }
@@ -53,7 +59,7 @@ public class Topology {
         Map<String, SwitchToSwitch> paths = new HashMap<String, SwitchToSwitch>();
         Map<String, Long> pathMap = new HashMap<String, Long>();
         for (String nodeId : switchMap.keySet()){
-            if (!nodeId.equals(srcIp)){
+            if (!nodeId.equals(srcSwitch)){
                 pathMap.put(nodeId, Long.MAX_VALUE);
             }else {
                 pathMap.put(nodeId, (long)0);
@@ -62,7 +68,7 @@ public class Topology {
         while(!currentSwitch.equals(destSwitch)){
             for (Port port : switchMap.get(currentSwitch).getPortMap().values()){
                 String connectedSwitch = port.getConnectedSwitchNodeId();
-                if (!knownSwitches.contains(connectedSwitch)){
+                if (connectedSwitch != null && !knownSwitches.contains(connectedSwitch)){
                     long distance = pathMap.get(currentSwitch) + port.getRate();
                     if (pathMap.get(connectedSwitch) > distance){
                         pathMap.replace(connectedSwitch, distance);
@@ -75,8 +81,8 @@ public class Topology {
                     }
                 }
             }
-            String nextHop = getTheMinimumPathFromMap(pathMap);
-            pathMap.remove(nextHop);
+            String nextHop = getTheMinimumPathFromMap(knownSwitches, pathMap);
+            knownSwitches.add(nextHop);
             currentSwitch = nextHop;
         }
         currentSwitch = destSwitch;
@@ -88,17 +94,20 @@ public class Topology {
         return flowEntries;
     }
 
-    private String getTheMinimumPathFromMap(Map<String, Long> pathMap){
+    private String getTheMinimumPathFromMap(Set<String> knownSwitches, Map<String, Long> pathMap){
             String nodeId = "";
             long shortestPath = Long.MAX_VALUE;
             for (Map.Entry<String, Long> pathEntry : pathMap.entrySet()){
                 String key = pathEntry.getKey();
                 Long distance = pathEntry.getValue();
-                if (distance == 0){
+                if (knownSwitches.contains(key)){
                     continue;
                 }
                 if (distance < shortestPath)
+                {
                     nodeId = key;
+                    shortestPath = distance;
+                }
             }
             return nodeId;
     }

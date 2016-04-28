@@ -50,4 +50,9 @@ public class FlowEntry {
     public String getDestIp() {
         return destIp;
     }
+
+    public String toString(){
+        return "nodeId " + nodeId +"\n" +
+                "portNumber" + portNumber;
+    }
 }

@@ -1,9 +1,6 @@
 package vm.migration.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by xiaocdon on 2016/4/23.
@@ -23,6 +20,13 @@ public class Switch {
         this.portMap.put(portNumber, port);
     }
 
+    public void addPorts(Collection<Port> ports){
+        for (Port port : ports){
+            portMap.put(Integer.toString(port.getPortNumber()), port);
+        }
+    }
+
+
     public void addHost(String hostIp){
         this.hosts.add(hostIp);
     }
@@ -34,6 +38,7 @@ public class Switch {
     public Map<String, Port> getPortMap(){
         return portMap;
     }
+
 
     public String getNodeId() {
         return nodeId;

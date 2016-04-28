@@ -12,6 +12,12 @@ public class Port {
         this.portNumber = portNumber;
     }
 
+    public Port(String portNumber, long rate, String connectedSwitch){
+        this.portNumber = portNumber;
+        this.rate = rate;
+        this.connectedSwitch = connectedSwitch;
+    }
+
     public void setConnectedSwitch(String connectedSwitchId){
         this.connectedSwitch = connectedSwitchId;
     }
