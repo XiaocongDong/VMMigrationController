@@ -59,8 +59,8 @@ public class ControllerBroker {
                         "       <type>2048</type>\n" +
                         "     </ethernet-type>\n" +
                         "    </ethernet-match>\n" +
-                        "    <ipv4-source>%s</ipv4-source>\n" +
-                        "    <ipv4-destination>%s</ipv4-destination>\n" +
+                        "    <ipv4-source>%s/32</ipv4-source>\n" +
+                        "    <ipv4-destination>%s/32</ipv4-destination>\n" +
                         "   </match>\n" +
                         "   <instructions>\n" +
                         "    <instruction>\n" +
@@ -88,12 +88,11 @@ public class ControllerBroker {
         }
         HttpClient httpClient = HttpClients.createDefault();
         HttpPost postRequest = new HttpPost(url);
-
+        out.println(type + " " + body);
         postRequest.setHeader("Authorization", "Basic YWRtaW46YWRtaW4=");
         postRequest.setHeader("Accept", "application/json");
 
         try{
-            out.println(body);
             StringEntity input = new StringEntity(body);
             input.setContentType("application/xml");
             postRequest.setEntity(input);
@@ -133,12 +132,10 @@ public class ControllerBroker {
                 }
 
                 String responseStr = strBuilder.toString();
-//                out.println(responseStr);
 
                 JSONObject responseJson = new JSONObject(responseStr);
                 JSONObject topologyObj = responseJson.getJSONObject("network-topology");
                 JSONArray topoArr = topologyObj.getJSONArray("topology");
-//                out.println(topoArr.toString());
                 JSONArray nodeArr = topoArr.getJSONObject(0).getJSONArray("node");
                 //get all the nodes information
                 for (int i = 0; i < nodeArr.length(); i++){
@@ -151,7 +148,6 @@ public class ControllerBroker {
                         String ip = hostObj.getString("ip");
                         Host host = new Host(nodeId, mac, ip);
                         topo.addHost(nodeId, host);
-//                        out.println(host);
                     }else {
                         Switch sw = new Switch(nodeId);
                         JSONArray portArr = nodeObj.getJSONArray("termination-point");
@@ -174,7 +170,7 @@ public class ControllerBroker {
                     String linkId = linkObj.getString("link-id");
                     JSONObject destObj = linkObj.getJSONObject("destination");
                     JSONObject srcObj = linkObj.getJSONObject("source");
-                        //link between the host and switch
+                    //link between the host and switch
                     String destNodeId = destObj.getString("dest-node");
                     String srcNodeId = srcObj.getString("source-node");
                     if (destNodeId.contains("host")){
@@ -188,8 +184,6 @@ public class ControllerBroker {
                         destSwitch.getPortByPortNumber(portNumber).setConnectedSwitch(srcNodeId);
                     }
                 }
-                int i = 1;
-
             }else {
                 throw new Exception("Can't get the topo information of the network");
             }
@@ -246,7 +240,6 @@ public class ControllerBroker {
                     JSONObject bytes = statistics.getJSONObject("bytes");
                     long transmitted = bytes.getLong("transmitted");
                     Long received = bytes.getLong("received");
-//                    out.println("portNumber "+ portNumber + " tx :" + transmitted + "  rx :" + received);
                     long transport = transmitted + received;
                     rateMap.put(portNumber, transport);
                 }
@@ -296,7 +289,6 @@ public class ControllerBroker {
                 for (Map.Entry<String, Long> mapEntry : rateMap.entrySet()) {
                     sw.getPortByPortNumber(mapEntry.getKey()).setRate(mapEntry.getValue());
                 }
-//                out.println(sw);
             }
         }catch (IOException e){
 

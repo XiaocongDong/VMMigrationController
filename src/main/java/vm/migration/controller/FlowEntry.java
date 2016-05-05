@@ -55,4 +55,17 @@ public class FlowEntry {
         return "nodeId " + nodeId +"\n" +
                 "portNumber" + portNumber;
     }
+
+    public boolean equals(FlowEntry flowEntry){
+        if (this.nodeId.equals(flowEntry.getNodeId())){
+            if (this.portNumber == flowEntry.getPort()){
+                if (this.srcIp.equals(flowEntry.getSrcIp())){
+                    if (this.destIp.equals(flowEntry.getDestIp())){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }
