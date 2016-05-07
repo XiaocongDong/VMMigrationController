@@ -1,6 +1,7 @@
 package vm.migration.controller;
 
 import com.google.common.collect.Lists;
+import vm.migration.controller.webservice.Input;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,10 +15,10 @@ import static java.lang.System.out;
  * Created by xiaocdon on 2016/4/23.
  */
 public class VMMigrationController {
-    public static void main(String[] args){
-        String ip = "192.168.191.149";
-        String srcIp = "10.0.0.1";
-        String destIp = "10.0.0.5";
+    public boolean performFlowOptimization(Input input){
+        String ip = input.getControllerIp();
+        String srcIp = input.getSrcIp();
+        String destIp = input.getDestIp();
         ControllerBroker controllerBroker = new ControllerBroker(ip);
         Topology topo = null;
         try {
@@ -31,30 +32,31 @@ public class VMMigrationController {
             topoRefreshTask.start();
         }else{
             out.println("can't get the topo information");
-            return;
+            return false;
         }
 
         List<FlowEntry> flowEntries = new ArrayList<FlowEntry>();
         List<FlowEntry> tempFlowEntries = new ArrayList<FlowEntry>();
-        while(true){
-            tempFlowEntries = topo.getFlowEntries(srcIp, destIp);
-            if (checkFlowEntries(flowEntries, tempFlowEntries)){
-                continue;
-            }else {
-                if (flowEntries.size() != 0)
-                    controllerBroker.writeFlowEntries(flowEntries, TYPE.DELETE);
-                flowEntries = tempFlowEntries;
-                controllerBroker.writeFlowEntries(flowEntries, TYPE.ADD);
-            }
-            Thread.yield();
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-//         flowEntries = topo.getFlowEntries(srcIp, destIp);
-//        controllerBroker.writeFlowEntries(flowEntries, TYPE.ADD);
+//        while(true){
+//            tempFlowEntries = topo.getFlowEntries(srcIp, destIp);
+//            if (checkFlowEntries(flowEntries, tempFlowEntries)){
+//                continue;
+//            }else {
+//                if (flowEntries.size() != 0)
+//                    controllerBroker.writeFlowEntries(flowEntries, TYPE.DELETE);
+//                flowEntries = tempFlowEntries;
+//                controllerBroker.writeFlowEntries(flowEntries, TYPE.ADD);
+//            }
+//            Thread.yield();
+//            try {
+//                Thread.sleep(2000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+        flowEntries = topo.getFlowEntries(srcIp, destIp);
+        controllerBroker.writeFlowEntries(flowEntries, TYPE.ADD);
+        return true;
     }
 
     /**

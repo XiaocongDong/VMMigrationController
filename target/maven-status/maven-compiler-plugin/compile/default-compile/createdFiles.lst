@@ -1,6 +1,7 @@
 vm/migration/controller/ControllerBroker.class
 vm/migration/controller/VMMigrationController.class
 vm/migration/controller/Switch.class
+vm/migration/controller/webservice/Input.class
 vm/migration/controller/TYPE.class
 vm/migration/controller/Host.class
 vm/migration/controller/Topology$SwitchToSwitch.class
@@ -8,3 +9,4 @@ vm/migration/controller/Port.class
 vm/migration/controller/FlowEntry.class
 vm/migration/controller/VMMigrationController$TopoRefresher.class
 vm/migration/controller/Topology.class
+vm/migration/controller/webservice/MigrationService.class

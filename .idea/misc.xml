@@ -3,12 +3,9 @@
   <component name="EntryPointsManager">
     <entry_points version="2.0" />
   </component>
-<<<<<<< HEAD
   <component name="FrameworkDetectionExcludesConfiguration">
     <file type="web" url="file://$PROJECT_DIR$" />
   </component>
-=======
->>>>>>> 60b5d04f448fd4226c12b5c0e538c2b243fc465b
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
