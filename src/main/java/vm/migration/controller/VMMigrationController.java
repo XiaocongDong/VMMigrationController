@@ -28,8 +28,8 @@ public class VMMigrationController {
         }
         if (topo != null){
             controllerBroker.updateTopoInfo(topo);
-            Thread topoRefreshTask = new Thread(new TopoRefresher(topo, controllerBroker));
-            topoRefreshTask.start();
+//            Thread topoRefreshTask = new Thread(new TopoRefresher(topo, controllerBroker));
+//            topoRefreshTask.start();
         }else{
             out.println("can't get the topo information");
             return false;

@@ -248,7 +248,7 @@ public class ControllerBroker {
             out.println("can't update the switch port rate");
         }
         try{
-          Thread.sleep(3000);
+          Thread.sleep(1000);
         }catch (InterruptedException e){
 
         }
@@ -281,7 +281,7 @@ public class ControllerBroker {
                     long transmitted = bytes.getLong("transmitted");
                     Long received = bytes.getLong("received");
                     long transport = transmitted + received;
-                    long interval = 3;
+                    long interval = 1;
                     long rate = (transport - rateMap.get(portNumber)) / (interval);
                     rateMap.replace(portNumber, rate);
                 }
