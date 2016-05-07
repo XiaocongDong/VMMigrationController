@@ -33,6 +33,6 @@ public class Input {
     }
 
     public String toString(){
-        return "srcIp: " + srcIp + "destIp: " + destIp;
+        return "The flow from " + srcIp + " to " + destIp;
     }
 }
