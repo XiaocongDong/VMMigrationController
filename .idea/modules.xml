@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-<<<<<<< HEAD
-      <module fileurl="file://$PROJECT_DIR$/VMMigrationController.iml" filepath="$PROJECT_DIR$/VMMigrationController.iml" />
-=======
       <module fileurl="file://$PROJECT_DIR$/vm.migration.controller.iml" filepath="$PROJECT_DIR$/vm.migration.controller.iml" />
->>>>>>> 60b5d04f448fd4226c12b5c0e538c2b243fc465b
     </modules>
   </component>
 </project>
